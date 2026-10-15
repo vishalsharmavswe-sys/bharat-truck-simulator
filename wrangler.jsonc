@@ -1,0 +1,52 @@
+// Bharat Truck Simulator on Cloudflare: ONE Worker = the built site (Workers Static Assets,
+// ./dist from `vite build`) + the "Phone as wheel" pairing API (worker/index.js).
+// /api/* and the pages run the Worker first (the pages only to send www to the apex and the
+// old chairdrive.com pages to bharattrucksimulator.com, worker/moved.js); every other path is served by the asset
+// layer (html_handling: /wheel → wheel.html, /ride → ride.html). `npm run deploy` builds, then deploys.
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "chairdrive",
+    "main": "worker/index.js",
+    "compatibility_date": "2026-08-15",
+    "assets": {
+        "directory": "./dist",
+        "binding": "ASSETS",
+        "html_handling": "auto-trailing-slash",
+        "not_found_handling": "none",
+        "run_worker_first": ["/api/*", "/", "/index.html", "/wheel", "/wheel.html", "/ride", "/ride.html"]
+    },
+    "routes": [
+        { "pattern": "bharattrucksimulator.com", "custom_domain": true },
+        { "pattern": "www.bharattrucksimulator.com", "custom_domain": true },
+        // The old address (the game was ChairDrive until 2026-10-03): pages redirect, /api + assets still answer.
+        { "pattern": "chairdrive.com", "custom_domain": true },
+        { "pattern": "www.chairdrive.com", "custom_domain": true }
+    ],
+    // One PairBox per pairing code; ONE MpHall (idFromName('hall')) for the multiplayer lobby
+    // (worker/mpHall.js). SQLite-backed, so both run on the Workers Free plan.
+    "durable_objects": {
+        "bindings": [
+            { "name": "PAIR", "class_name": "PairBox" },
+            { "name": "MP", "class_name": "MpHall" }
+        ]
+    },
+    "migrations": [
+        { "tag": "v1", "new_sqlite_classes": ["PairBox"] },
+        { "tag": "v2", "new_sqlite_classes": ["MpHall"] }
+    ],
+    // Per-IP limits (keyed by CF-Connecting-IP). namespace_id is any positive
+    // integer, unique within the Cloudflare account. The Worker skips a limit
+    // whose binding is missing.
+    "ratelimits": [
+        { "name": "PAIR_LIMIT", "namespace_id": "1001", "simple": { "limit": 10, "period": 60 } },
+        { "name": "API_LIMIT", "namespace_id": "1002", "simple": { "limit": 60, "period": 60 } },
+        // The radio's YouTube search + video info (/api/yt/*, worker/yt.js), both endpoints.
+        { "name": "YT_LIMIT", "namespace_id": "1003", "simple": { "limit": 15, "period": 60 } },
+        // New multiplayer WebSockets (/api/mp, worker/mpHall.js) — connects, not messages.
+        { "name": "MP_LIMIT", "namespace_id": "1004", "simple": { "limit": 10, "period": 60 } }
+    ],
+    // Secret YT_API_KEY (YouTube Data API v3, for /api/yt/search): `wrangler secret put YT_API_KEY`;
+    // locally in .dev.vars, never committed. Without it search answers 503 search_off.
+    // Var MP_RELAY = "0" (dashboard / `vars`) switches the multiplayer hall's relay fallback off.
+    "observability": { "enabled": true }
+}

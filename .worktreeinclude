@@ -1,0 +1,2 @@
+# Gitignored files Claude Code copies into a new worktree (claude -w / EnterWorktree)
+.dev.vars

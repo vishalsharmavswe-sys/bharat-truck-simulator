@@ -1,0 +1,6 @@
+# One line per model id, appended by parallel model branches: union-merge, never conflict.
+public/assets/models/CREDITS.md merge=union
+public/assets/tex/CREDITS.md merge=union
+# Generated binaries
+*.glb binary
+*.ktx2 binary

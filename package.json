@@ -1,0 +1,50 @@
+{
+    "name": "chairdrive",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+        "predev": "node scripts/copy-mediapipe.mjs && node scripts/copy-basis.mjs && node scripts/assets/gen-manifest.mjs",
+        "dev": "vite",
+        "prebuild": "node scripts/copy-mediapipe.mjs && node scripts/copy-basis.mjs && node scripts/assets/gen-manifest.mjs",
+        "build": "vite build",
+        "preview": "vite preview",
+        "test": "TZ=Asia/Kolkata node --test 'tests/*.test.mjs'",
+        "test:worker": "vitest run --config vitest.config.js",
+        "dev:worker": "npm run build && wrangler dev",
+        "deploy": "npm run build && wrangler deploy",
+        "gaali:voice": "node scripts/gaali-voice.mjs",
+        "hands:bake": "node scripts/hands/bake-hands.mjs",
+        "calls:voice": "node scripts/calls-voice.mjs",
+        "mob:voice": "node scripts/mob-voice.mjs",
+        "police:voice": "node scripts/police-voice.mjs",
+        "audio:pick": "node scripts/audio-pick.mjs",
+        "assets:model": "node scripts/assets/model.mjs",
+        "assets:glb": "node scripts/assets/build-glb.mjs",
+        "assets:tex": "node scripts/assets/build-ktx2.mjs",
+        "assets:manifest": "node scripts/assets/gen-manifest.mjs"
+    },
+    "dependencies": {
+        "@mediapipe/tasks-vision": "^1.0.1",
+        "n8ao": "^2.0.1",
+        "postprocessing": "^6.39.5",
+        "qrcode": "^1.5.4",
+        "three": "^0.183.2",
+        "vue": "^3.5.43"
+    },
+    "devDependencies": {
+        "@cloudflare/vitest-pool-workers": "^0.22.0",
+        "@gltf-transform/cli": "^4.5.1",
+        "@gltf-transform/core": "^4.5.1",
+        "@gltf-transform/extensions": "^4.5.1",
+        "@gltf-transform/functions": "^4.5.1",
+        "@vitejs/plugin-vue": "^6.0.9",
+        "@vitest/runner": "^4.1.11",
+        "@vitest/snapshot": "^4.1.11",
+        "meshoptimizer": "^1.3.0",
+        "sharp": "^0.35.5",
+        "vite": "^8.3.1",
+        "vitest": "^4.1.11",
+        "wrangler": "^4.144.0"
+    }
+}
